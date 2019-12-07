@@ -1,0 +1,16 @@
+version: "3"
+services:
+#  Create a service named db.
+  postgres:
+    image: postgres
+#   Give the container the name my_postgres. You can changes to something else.
+    container_name: postgres-rest-service
+#   Setup the username, password, and database name. You can changes these values.
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=INSERT_PASSWORD_HERE
+      - POSTGRES_DB=rest-service
+#    ports:
+#      - "9432:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data

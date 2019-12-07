@@ -1,0 +1,12 @@
+toml
+wheel
+psycopg2
+Flask-SQLAlchemy
+quart
+flask-bcrypt
+flask-wtf
+flask-restful
+flask-jwt-extended
+passlib
+requests
+quart_openapi

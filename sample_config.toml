@@ -1,0 +1,9 @@
+[rest-service]
+    host = '0.0.0.0'
+    port = 9443
+    use_ssl = false
+    cert_pem = '/path/rest/server.pem'
+    key_pem = '/path/rest/server.key'
+    use_jwt = false
+    use_wsgi = false
+    views = ['rest_service.resources.Example']

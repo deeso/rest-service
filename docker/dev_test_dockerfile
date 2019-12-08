@@ -1,0 +1,9 @@
+FROM base_python
+
+
+WORKDIR /opt/main
+RUN wget -O config.toml   https://github.com/deeso/rest-service/blob/master/docker/sample-config.toml
+RUN wget -O main.py       https://github.com/deeso/rest-service/blob/master/docker/sample_main.py
+RUN wget -O python_cmd.sh https://github.com/deeso/rest-service/blob/master/docker/python_cmd.sh
+
+expose 9080

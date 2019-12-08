@@ -15,11 +15,11 @@ class DBSettings(object):
     @classmethod
     def get_mongo_config(cls, **kargs):
         settings = {}
-        for k in MAP_MONGO_TO_APP:
+        for k, nk in MAP_MONGO_TO_SETTINGS.items():
             v = kargs.get(k, '')
             if v is None:
                 v = ''
-            settings[k] = v
+            settings[nk] = v
         return settings
 
     @classmethod

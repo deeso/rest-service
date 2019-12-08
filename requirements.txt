@@ -11,3 +11,4 @@ passlib
 requests
 quart_openapi
 pycrypto
+jinja2

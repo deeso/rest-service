@@ -1,0 +1,27 @@
+[rest-service]
+    host = '0.0.0.0'
+    port = 9443
+    use_ssl = false
+    cert_pem = '/path/rest/server.pem'
+    key_pem = '/path/rest/server.key'
+    use_jwt = false
+    use_wsgi = false
+    views = ['rest_service.resources.Example',
+             'rest_service.resources.ExampleAdminView',
+             'rest_service.resources.ExampleUserView'  ]
+
+    using_postgres = false
+    postgres_host = '1.80.67.2'
+    postgres_port = 5432
+    postgres_user = 'postres_test'
+    postgres_pass = '9C4q&7$ES9X1a1M^gA4369p9C4q&7$ES9X1a1M^gA4369p9C4q&7$ES9X1a1M^gA4369p'
+    postgres_use_ssl = false
+    postgres_db = 'rest-service'
+
+    using_mongo = false
+    mongo_host = '1.80.67.2'
+    mongo_port = 5432
+    mongo_user = 'postres_test'
+    mongo_pass = '9C4q&7$ES9X1a1M^gA4369p9C4q&7$ES9X1a1M^gA4369p9C4q&7$ES9X1a1M^gA4369p'
+    mongo_use_ssl = false
+    mongo_db = 'rest-service'

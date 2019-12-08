@@ -1,5 +1,6 @@
+rest_service_venv/*
+*_venv/*
 internal_docker/*
-wsheldon_internal/*
 venv/*
 internal/*
 .idea/*

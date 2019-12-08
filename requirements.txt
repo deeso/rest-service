@@ -10,3 +10,4 @@ flask-jwt-extended
 passlib
 requests
 quart_openapi
+pycrypto

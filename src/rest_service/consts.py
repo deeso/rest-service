@@ -18,6 +18,7 @@ KEY_PEM = 'key_pem'
 USER = 'user'
 PASSWORD = 'password'
 DB = 'db'
+DATABASE = 'database'
 USING_POSTGRES = 'using_postgres'
 POSTGRES_HOST = 'postgres_host'
 POSTGRES_PORT = 'postgres_port'
@@ -95,9 +96,9 @@ POSTGRESDB_SETTINGS = 'POSTGRESDB_SETTINGS'
 MAP_POSTGRES_TO_APP = {
     POSTGRES_HOST: HOST,
     POSTGRES_PORT: PORT,
-    POSTGRES_USER: USER,
+    POSTGRES_USER: USERNAME,
     POSTGRES_PASS: PASSWORD,
-    POSTGRES_DB: DB,
+    POSTGRES_DB: DATABASE,
 }
 
 DIALECT_DRIVER = 'dialect_driver'

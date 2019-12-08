@@ -33,6 +33,7 @@ class Config(object):
             return
 
         rest_service = {}
+        print(sr_block)
         for k, v in REST_SERVICE_CONFIGS.items():
             rest_service[k] = sr_block.get(k, v)
 

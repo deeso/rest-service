@@ -37,7 +37,7 @@ MONGO_DB = 'mongo_db'
 VIEWS = 'views'
 
 
-REST_SERVICE_BLOCK = 'rest-service-block'
+REST_SERVICE_BLOCK = 'rest-service'
 
 REST_SERVICE_CONFIGS = {
     USE_SSL: False,

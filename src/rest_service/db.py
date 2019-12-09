@@ -1,16 +1,16 @@
 from .consts import *
 import urllib.parse
 
-def build_db_uri(dbtype=POSTGRES_DB, **kargs):
-    fmt_kargs = {k:kargs.get(k, '') for k in MAP_MONGO_TO_APP.values()}
-    if dbtype == POSTGRES_DB:
-        fmt_kargs[DIALECT_DRIVER] = POSTGRES_DIALECT
-    else:
-        fmt_kargs[DIALECT_DRIVER] = MONGODB_DIALECT
-    return DB_URI_FMT.format(**fmt_kargs)
-
 
 class DBSettings(object):
+
+    @classmethod
+    def get_mongoclient_kargs(cls, **kargs):
+        config = {}
+        for k, nk in MAP_MONGO_TO_APP.items():
+            v = kargs.get(k, '')
+            config[nk] = v
+        return config
 
     @classmethod
     def get_mongo_config(cls, **kargs):

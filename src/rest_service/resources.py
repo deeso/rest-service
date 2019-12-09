@@ -1,5 +1,9 @@
 from quart_openapi import Resource
 from quart import Response, jsonify, request
+from umongo import Document, EmbeddedDocument
+from pymongo.collection import Collection
+from pymongo import MongoClient
+from umongo import Instance
 import json
 
 
@@ -23,6 +27,42 @@ async def check_token(fn):
             rsp = fn(*args, **kwargs)
         return rsp
     return deco
+
+
+def patch_umongo_meta(odm_cls, **kargs):
+    meta = getattr(odm_cls, 'Meta')
+    if meta is None:
+        return False
+    connection = kargs.get('mongo_connection', None)
+    database = kargs.get('mongo_database', None)
+    collection = kargs.get('mongo_collection', None)
+
+    instance = Instance(connection[database])
+    if connection is not None and \
+        isinstance(connection, MongoClient) and \
+        database is not None and \
+        collection is not None:
+        col = connection[database][collection]
+        setattr(odm_cls, 'Meta', col)
+
+    if connection is not None and \
+        isinstance(connection, MongoClient) and \
+        database is not None:
+        instance = instance.register(odm_cls)
+        setattr(odm_cls, 'Meta', instance)
+    return True
+
+
+def patch_sqlalchemy_meta(sqla_cls, **kargs):
+    table = getattr(sqla_cls, '__table__')
+    if table is None:
+        return False
+
+    tablename = kargs.get('tablename', None)
+    setattr(table, 'name', tablename)
+    setattr(table, 'fullname', tablename)
+    setattr(table, 'description', tablename)
+    return True
 
 
 class BaseResource(Resource):
@@ -71,7 +111,7 @@ class ExampleView(BaseResource):
     NAME = CLASS_NAME
     RESOURCE_HANDLER = None
 
-    async def get(self):
+    async def get(self, *args, **kwargs):
         '''
         Get Example view
         '''
@@ -85,7 +125,7 @@ class ExampleAdminView(BaseResource):
     RESOURCE_HANDLER = None
 
     @check_admin_token
-    async def get(self):
+    async def get(self, *args, **kwargs):
         '''
         Get Example view
         '''
@@ -99,7 +139,7 @@ class ExampleUserView(BaseResource):
     RESOURCE_HANDLER = None
 
     @check_token
-    async def get(self):
+    async def get(self, *args, **kwargs):
         '''
         Get Example view
         '''

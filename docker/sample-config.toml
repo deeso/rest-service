@@ -25,3 +25,8 @@
     mongo_pass = '9C4q&7$ES9X1a1M^gA4369p9C4q&7$ES9X1a1M^gA4369p9C4q&7$ES9X1a1M^gA4369p'
     mongo_use_ssl = false
     mongo_db = 'rest-service'
+
+    [rest-service.mongo_odms.test]
+        odm_class = 'rest_service.resources.OverloadedDocument'
+        odm_database = 'test-db'
+        odm_collection = 'test-db'

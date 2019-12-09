@@ -34,6 +34,7 @@ MONGO_USER = 'mongo_user'
 MONGO_PASS = 'mongo_password'
 MONGO_USE_SSL = 'mongo_use_ssl'
 MONGO_DB = 'mongo_db'
+MONGO_ODMS = 'mongo_odms'
 
 VIEWS = 'views'
 
@@ -59,6 +60,8 @@ REST_SERVICE_CONFIGS = {
     MONGO_PASS: None,
     MONGO_USE_SSL: False,
     MONGO_DB: None,
+    MONGO_ODMS: list(),
+
 
     # Postgres related
     USING_POSTGRES: False,
@@ -81,9 +84,9 @@ MONGODB_DB = 'MONGODB_DB'
 MAP_MONGO_TO_APP = {
     MONGO_HOST: HOST,
     MONGO_PORT: PORT,
-    MONGO_USER: USER,
+    MONGO_USER: USERNAME,
     MONGO_PASS: PASSWORD,
-    MONGO_DB: DB,
+    # MONGO_DB: DB,
 }
 
 MAP_MONGO_TO_SETTINGS = {

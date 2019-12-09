@@ -6,12 +6,13 @@ from .db import DBSettings
 import importlib
 import traceback
 from flask_sqlalchemy import SQLAlchemy
-import threading
 import asyncio
-import signal
 from multiprocessing import Process
 from hypercorn.config import Config as HyperConfig
 from hypercorn.asyncio import serve
+
+from pymongo import MongoClient
+from .resources import patch_umongo_meta, patch_sqlalchemy_meta
 
 class RestService(object):
     DEFAULT_VALUES = REST_SERVICE_CONFIGS
@@ -41,7 +42,21 @@ class RestService(object):
 
         #TODO figure out how to distinguish between Models in Mongo and Postgres
         if self.get_using_mongo():
-            self.mongddb = SQLAlchemy(self.app)
+            kargs = DBSettings.get_mongoclient_kargs(**kwargs)
+            self.mongddb_client = MongoClient(tlsInsecure=True,
+                                              ssl_keyfile=self.get_key_pem(),
+                                              ssl_certfile=self.get_cert_pem(),
+                                              **kargs)
+
+            for name, kargs in self.get_mongo_odms():
+                classname = kargs.get('odm_class', None)
+                database = kargs.get('odm_database', None)
+                collection = kargs.get('odm_collection', None)
+                if classname is None or database is None or collection is None:
+                    continue
+                self.import_add_odms(classname, database, collection)
+
+        # TODO figure out how to distinguish between Models in Mongo and Postgres
         if self.get_using_postgres():
             self.postgresdb = SQLAlchemy(self.app)
 
@@ -53,16 +68,10 @@ class RestService(object):
 
         self.bg_thread = None
 
-    def import_add_view(self, fq_python_class_view: str) -> bool:
-        '''
-        Import a module and load the class for a provided view
-        :param view: Python module in dot'ted notation, e.g. `foo.views.ViewX`
-        :return: bool
-        '''
-        self.logger.debug("Adding view ({}) to rest-service".format(fq_python_class_view))
-        blah = fq_python_class_view.split('.')
+    def load_class(self, classname):
+        blah = classname.split('.')
         if len(blah) <= 1:
-            raise Exception("Expecting a python_module.Class got {}".format(view))
+            raise Exception("Expecting a python_module.Class got {}".format(classname))
 
         mn = '.'.join(blah[:-1])
         cn = blah[-1]
@@ -74,22 +83,69 @@ class RestService(object):
         except:
             msg = "{} is not a valid Python module: \n{}".format(mn, traceback.format_exc())
             self.logger.exception(msg)
-            return False
+            return None
 
         try:
             python_class = getattr(mi, cn, None)
         except:
             msg = "{} is not a valid Python class in {}: \n{}".format(cn, mn, traceback.format_exc())
             self.logger.exception(msg)
-            return False
+            return None
+        return python_class
 
+    def import_add_view(self, fq_python_class_view: str) -> bool:
+        '''
+        Import a module and load the class for a provided view
+        :param view: Python module in dot'ted notation, e.g. `foo.views.ViewX`
+        :return: bool
+        '''
+        self.logger.debug("Adding view ({}) to rest-service".format(fq_python_class_view))
+        blah = fq_python_class_view.split('.')
+        if len(blah) <= 1:
+            raise Exception("Expecting a python_module.Class got {}".format(fq_python_class_view))
+
+        python_class = self.load_class(fq_python_class_view)
         if python_class is not None:
-            self.add_view(python_class)
+            self.views.append(python_class)
+            python_class.bind_application(self.app)
             self.logger.debug("Finished adding view ({}) to rest-service".format(fq_python_class_view))
             return True
 
         self.logger.debug("Failed tp add view ({}) to rest-service".format(fq_python_class_view))
         return False
+
+    def import_add_odms(self, fq_python_class_odm: str, database_name, collection_name) -> bool:
+        '''
+        Import a module and load the class for a provided view
+        :param view: Python module in dot'ted notation, e.g. `foo.views.ViewX`
+        :return: bool
+        '''
+        self.logger.debug("Adding view ({}) to rest-service".format(fq_python_class_odm))
+
+        python_class = self.load_class(fq_python_class_odm)
+
+        if python_class is not None and self.mongddb_client is not None:
+            kargs = {'mongo_database': database_name,
+                     'mongo_collection': collection_name,
+                     'mongo_connection': self.mongddb_client
+                     }
+            r = patch_umongo_meta(python_class, **kargs)
+            self.logger.debug("Finished adding view ({}) to rest-service".format(fq_python_class_odm))
+            return r
+
+        self.logger.debug("Failed tp add view ({}) to rest-service".format(fq_python_class_odm))
+        return False
+
+    def add_odm(self, database_name, collection_name, odm_class):
+        if self.mongddb_client is None:
+            return False
+
+        kargs = {'mongo_database': database_name,
+                  'mongo_collection': collection_name,
+                  'mongo_connection': self.mongddb_client
+                  }
+        patch_umongo_meta(odm_class, **kargs)
+        return True
 
     @classmethod
     def from_config(cls):
@@ -205,4 +261,7 @@ class RestService(object):
 
     def get_use_ssl(self):
         return getattr(self, USE_SSL)
+
+    def get_mongo_odms(self):
+        return getattr(self, MONGO_ODMS, {})
 

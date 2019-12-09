@@ -1,7 +1,6 @@
 from .consts import *
 import urllib.parse
 
-
 class DBSettings(object):
 
     @classmethod

@@ -26,6 +26,10 @@ POSTGRES_USER = 'postgres_user'
 POSTGRES_PASS = 'postgres_password'
 POSTGRES_USE_SSL = 'postgres_use_ssl'
 POSTGRES_DB = 'postgres_db'
+POSTGRES_ORMS = 'pstgres_orms'
+ORM_TABLE = 'orm_table'
+ORM_CLASS = 'orm_class'
+ORMS = 'orms'
 
 USING_MONGO = 'using_mongo'
 MONGO_HOST = 'mongo_host'
@@ -35,6 +39,11 @@ MONGO_PASS = 'mongo_password'
 MONGO_USE_SSL = 'mongo_use_ssl'
 MONGO_DB = 'mongo_db'
 MONGO_ODMS = 'mongo_odms'
+
+ODM_COLLECTION = 'odm_collection'
+ODM_DATABASE = 'odm_database'
+ODM_CLASS = 'odm_class'
+ODMS = 'orms'
 
 VIEWS = 'views'
 
@@ -61,6 +70,7 @@ REST_SERVICE_CONFIGS = {
     MONGO_USE_SSL: False,
     MONGO_DB: None,
     MONGO_ODMS: list(),
+    ODMS: {},
 
 
     # Postgres related
@@ -71,6 +81,7 @@ REST_SERVICE_CONFIGS = {
     POSTGRES_PASS: None,
     POSTGRES_USE_SSL: False,
     POSTGRES_DB: None,
+    ORMS: {},
 
 }
 

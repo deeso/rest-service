@@ -5,14 +5,14 @@ from quart_openapi import Pint
 from .db import DBSettings
 import importlib
 import traceback
-from flask_sqlalchemy import SQLAlchemy
 import asyncio
 from multiprocessing import Process
 from hypercorn.config import Config as HyperConfig
 from hypercorn.asyncio import serve
-
+from sqlalchemy.engine import create_engine
 from pymongo import MongoClient
 from .resources import patch_umongo_meta, patch_sqlalchemy_meta
+
 
 class RestService(object):
     DEFAULT_VALUES = REST_SERVICE_CONFIGS
@@ -21,7 +21,7 @@ class RestService(object):
     def __init__(self, **kwargs):
         self.init_keys = set()
 
-        for k, v in kwargs.items():
+        for k, v in kwargs.items():        # TODO figure out how to distinguish between Models in Mongo and Postgres
             setattr(self, k, v)
             self.init_keys.add(k)
 
@@ -40,7 +40,11 @@ class RestService(object):
         self.mongddb = None
         self.postgresdb = None
 
-        #TODO figure out how to distinguish between Models in Mongo and Postgres
+        self.views = []
+        if isinstance(kwargs.get(VIEWS, list()), list):
+            for v in kwargs.get(VIEWS, list()):
+                self.import_add_view(v)
+
         if self.get_using_mongo():
             kargs = DBSettings.get_mongoclient_kargs(**kwargs)
             self.mongddb_client = MongoClient(tlsInsecure=True,
@@ -49,23 +53,27 @@ class RestService(object):
                                               **kargs)
 
             for name, kargs in self.get_mongo_odms():
-                classname = kargs.get('odm_class', None)
-                database = kargs.get('odm_database', None)
-                collection = kargs.get('odm_collection', None)
+                classname = kargs.get(ODM_CLASS, None)
+                database = kargs.get(ODM_DATABASE, None)
+                collection = kargs.get(ODM_COLLECTION, None)
                 if classname is None or database is None or collection is None:
                     continue
                 self.import_add_odms(classname, database, collection)
 
-        # TODO figure out how to distinguish between Models in Mongo and Postgres
         if self.get_using_postgres():
-            self.postgresdb = SQLAlchemy(self.app)
+            pgc = DBSettings.get_postgres_config(**kwargs)
+            uri = pgc.get(SQLALCHEMY_DATABASE_URI)
+            self.postgres_engine = create_engine(uri)
 
-        self.views = []
+            for name, kargs in self.get_mongo_odms():
+                classname = kargs.get(ORM_CLASS, None)
+                tablename = kargs.get(ORM_TABLE, None)
 
-        if isinstance(kwargs.get(VIEWS, list()), list):
-            for v in kwargs.get(VIEWS, list()):
-                self.import_add_view(v)
+                if classname is None or tablename is None:
+                    continue
+                self.import_add_orms(classname, tablename)
 
+            Bas
         self.bg_thread = None
 
     def load_class(self, classname):
@@ -134,6 +142,25 @@ class RestService(object):
             return r
 
         self.logger.debug("Failed tp add view ({}) to rest-service".format(fq_python_class_odm))
+        return False
+
+    def import_add_orms(self, fq_python_class_orm: str, table_name) -> bool:
+        '''
+        Import a module and load the class for a provided view
+        :param view: Python module in dot'ted notation, e.g. `foo.views.ViewX`
+        :return: bool
+        '''
+        self.logger.debug("Adding view ({}) to rest-service".format(fq_python_class_orm))
+
+        python_class = self.load_class(fq_python_class_orm)
+
+        if python_class is not None and self.mongddb_client is not None:
+            kargs = {'postgres_tablename': table_name,}
+            r = patch_sqlalchemy_meta(python_class, **kargs)
+            self.logger.debug("Finished adding view ({}) to rest-service".format(fq_python_class_orm))
+            return r
+
+        self.logger.debug("Failed tp add view ({}) to rest-service".format(fq_python_class_orm))
         return False
 
     def add_odm(self, database_name, collection_name, odm_class):
@@ -265,3 +292,5 @@ class RestService(object):
     def get_mongo_odms(self):
         return getattr(self, MONGO_ODMS, {})
 
+    def get_postgres_orms(self):
+        return getattr(self, POSTGRES_ORMS, {})

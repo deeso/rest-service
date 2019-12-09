@@ -12,3 +12,5 @@ requests
 quart_openapi
 pycrypto
 jinja2
+async-sqlalchemy
+umongo

@@ -1,10 +1,11 @@
 from quart_openapi import Resource
-from quart import Response, jsonify, request
-from umongo import Document, EmbeddedDocument
-from pymongo.collection import Collection
+from quart import Response, request
 from pymongo import MongoClient
 from umongo import Instance
 import json
+
+from sqlalchemy.ext.declarative import declarative_base
+Base = declarative_base()
 
 
 # from https://www.anserinae.net/using-python-decorators-for-authentication.html
@@ -57,13 +58,16 @@ def patch_sqlalchemy_meta(sqla_cls, **kargs):
     table = getattr(sqla_cls, '__table__')
     if table is None:
         return False
-
-    tablename = kargs.get('tablename', None)
-    setattr(table, 'name', tablename)
-    setattr(table, 'fullname', tablename)
-    setattr(table, 'description', tablename)
+    tablename = kargs.get('postgres_tablename', None)
+    if table is not None:
+        setattr(table, 'name', tablename)
+        setattr(table, 'fullname', tablename)
+        setattr(table, 'description', tablename)
     return True
 
+
+class BaseSqla(Base):
+    pass
 
 class BaseResource(Resource):
     PATTERNS = ['/', ]

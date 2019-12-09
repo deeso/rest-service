@@ -26,7 +26,11 @@
     mongo_use_ssl = false
     mongo_db = 'rest-service'
 
-    [rest-service.mongo_odms.test]
+    [rest-service.odms.test]
         odm_class = 'rest_service.resources.OverloadedDocument'
         odm_database = 'test-db'
         odm_collection = 'test-db'
+
+    [rest-service.orms.test]
+        orm_class = 'rest_service.resources.OverloadedDocument'
+        orm_tablename = 'test-table'

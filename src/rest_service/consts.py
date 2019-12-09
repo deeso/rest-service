@@ -49,6 +49,8 @@ REST_SERVICE_CONFIGS = {
     CERT_PEM: None,
     KEY_PEM: None,
 
+    VIEWS: list(),
+
     # Mongo related
     USING_MONGO: False,
     MONGO_HOST: None,

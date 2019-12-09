@@ -40,7 +40,7 @@ class BaseResource(Resource):
         return cls.NAME
 
     @classmethod
-    def update_app(cls, app):
+    def bind_application(cls, app):
         for pattern in cls.PATTERNS:
             app.add_url_rule(pattern,
                              view_func=cls.as_view(cls.NAME))
@@ -65,8 +65,8 @@ class BaseResource(Resource):
         return None
 
 
-class ExampleView(Resource):
-    PATTERNS = ['/', ]
+class ExampleView(BaseResource):
+    PATTERNS = ['/example', ]
     CLASS_NAME = 'ExampleView'
     NAME = CLASS_NAME
     RESOURCE_HANDLER = None
@@ -78,8 +78,8 @@ class ExampleView(Resource):
         return Response(json.dumps({'result': 'example works'}), status=300, mimetype='application/json')
 
 
-class ExampleAdminView(Resource):
-    PATTERNS = ['/admin', ]
+class ExampleAdminView(BaseResource):
+    PATTERNS = ['/example_admin', ]
     CLASS_NAME = 'ExampleAdminView'
     NAME = CLASS_NAME
     RESOURCE_HANDLER = None
@@ -92,8 +92,8 @@ class ExampleAdminView(Resource):
         return Response(json.dumps({'result': 'admin example works'}), status=300, mimetype='application/json')
 
 
-class ExampleUserView(Resource):
-    PATTERNS = ['/user', ]
+class ExampleUserView(BaseResource):
+    PATTERNS = ['/example_user', ]
     CLASS_NAME = 'ExampleUserView'
     NAME = CLASS_NAME
     RESOURCE_HANDLER = None

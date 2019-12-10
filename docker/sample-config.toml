@@ -11,12 +11,12 @@
              'rest_service.resources.ExampleUserView'  ]
 
     using_postgres = false
-    postgres_host = '1.80.67.2'
-    postgres_port = 5432
-    postgres_user = 'postres_test'
-    postgres_pass = '9C4q&7$ES9X1a1M^gA4369p9C4q&7$ES9X1a1M^gA4369p9C4q&7$ES9X1a1M^gA4369p'
-    postgres_use_ssl = false
-    postgres_db = 'rest-service'
+    sqlalchemy_host = '1.80.67.2'
+    sqlalchemy_port = 5432
+    sqlalchemy_user = 'postres_test'
+    sqlalchemy_pass = '9C4q&7$ES9X1a1M^gA4369p9C4q&7$ES9X1a1M^gA4369p9C4q&7$ES9X1a1M^gA4369p'
+    sqlalchemy_use_ssl = false
+    sqlalchemy_db = 'rest-service'
 
     using_mongo = false
     mongo_host = '1.80.67.2'
@@ -27,10 +27,35 @@
     mongo_db = 'rest-service'
 
     [rest-service.odms.test]
-        odm_class = 'rest_service.resources.OverloadedDocument'
-        odm_database = 'test-db'
-        odm_collection = 'test-db'
+        name = 'test'
+        dialect = 'mongodb'
+        host = '1.80.67.4'
+        port = 27017
+        username = 'postres_test'
+        password = '9C4q&7$ES9X1a1M^gA4369p9C4q&7$ES9X1a1M^gA4369p9C4q&7$ES9X1a1M^gA4369p'
+        use_ssl = false
+#        cert_pem = '/path/rest/server.pem'
+#        key_pem = '/path/rest/server.key'
+
+        database = 'test-db'
+        collection = 'test-db'
+        controller = 'rest_service.examples.example.ExampleUserCntr'
+        odm_class = 'rest_service.examples.example.ExampleUserODM'
+        resource = 'rest_service.examples.example.ExampleUserRsrc'
 
     [rest-service.orms.test]
-        orm_class = 'rest_service.resources.OverloadedDocument'
-        orm_tablename = 'test-table'
+        name = 'test'
+        dialect = 'postgres'
+        host = '1.80.67.2'
+        port = 5432
+        username = 'postres_test'
+        password = '9C4q&7$ES9X1a1M^gA4369p9C4q&7$ES9X1a1M^gA4369p9C4q&7$ES9X1a1M^gA4369p'
+        use_ssl = false
+#        cert_pem = '/path/rest/server.pem'
+#        key_pem = '/path/rest/server.key'
+
+        database = 'test-db'
+        table = 'test-db'
+        controller = 'rest_service.examples.example.ExampleAdminCntr'
+        class = 'rest_service.examples.example.ExampleAdminODM'
+        resource = 'rest_service.examples.example.ExampleAdminRsrc'

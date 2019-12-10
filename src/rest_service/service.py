@@ -2,7 +2,7 @@ from .config import Config
 from .consts import *
 from .standard_logger import Logger
 from quart_openapi import Pint
-from .db import DBSettings
+from .db import DBSettings, ODMMapper, ORMMapper
 import importlib
 import traceback
 import asyncio
@@ -11,7 +11,36 @@ from hypercorn.config import Config as HyperConfig
 from hypercorn.asyncio import serve
 from sqlalchemy.engine import create_engine
 from pymongo import MongoClient
-from .resources import patch_umongo_meta, patch_sqlalchemy_meta
+from .models import patch_umongo_meta, patch_sqlalchemy_meta
+from sqlalchemy.ext.declarative import declarative_base
+
+
+class MongoEngineSettings(object):
+    pass
+
+class SqlAlchemySettings(object):
+    pass
+
+class ODMMapper(object):
+    DEFAULT_SETTINGS = {}
+
+
+    def __init__(self, name, **kargs):
+        self.name = name
+
+        for k, v in self.DEFAULT_SETTINGS.items():
+            setattr(self, k, kargs.get(k, v))
+
+        self.resource_class = None
+        self.application = None
+        self.resource_controller = None
+        self.odm_class = None
+
+
+
+class ORMapper(object):
+    pass
+
 
 
 class RestService(object):
@@ -35,10 +64,16 @@ class RestService(object):
 
         self.app = Pint(self.NAME)
         self.app.config.update(DBSettings.get_mongo_config(**kwargs))
-        self.app.config.update(DBSettings.get_postgres_config(**kwargs))
+        self.app.config.update(DBSettings.get_sqlalchemy_config(**kwargs))
 
-        self.mongddb = None
-        self.postgresdb = None
+
+        self.orm_mappings = {}
+        self.odm_mappings = {}
+        self.default_mongo_settings = {}
+        self.default_sqlalchemy_settings = {}
+
+        self.default_mongo_engine = None
+        self.default_sqla_engine = None
 
         self.views = []
         if isinstance(kwargs.get(VIEWS, list()), list):
@@ -46,35 +81,48 @@ class RestService(object):
                 self.import_add_view(v)
 
         if self.get_using_mongo():
-            kargs = DBSettings.get_mongoclient_kargs(**kwargs)
-            self.mongddb_client = MongoClient(tlsInsecure=True,
-                                              ssl_keyfile=self.get_key_pem(),
-                                              ssl_certfile=self.get_cert_pem(),
-                                              **kargs)
+            self.default_mongo_settings = DBSettings.get_mongoclient_kargs(**kwargs)
+            self.default_mongo_settings[TLS_INSECURE] = True
+            if self.default_mongo_settings.get(SSL_KEYFILE, None) is None:
+                self.default_mongo_settings[SSL_KEYFILE] = self.get_key_pem()
+            if self.default_mongo_settings.get(SSL_CERTFILE, None) is None:
+                self.default_mongo_settings[SSL_KEYFILE] = self.get_cert_pem()
 
-            for name, kargs in self.get_mongo_odms():
-                classname = kargs.get(ODM_CLASS, None)
-                database = kargs.get(ODM_DATABASE, None)
-                collection = kargs.get(ODM_COLLECTION, None)
-                if classname is None or database is None or collection is None:
-                    continue
-                self.import_add_odms(classname, database, collection)
+
 
         if self.get_using_postgres():
-            pgc = DBSettings.get_postgres_config(**kwargs)
+            pgc = DBSettings.get_sqlalchemy_config(**kwargs)
             uri = pgc.get(SQLALCHEMY_DATABASE_URI)
-            self.postgres_engine = create_engine(uri)
+            self.default_sqla_engine = create_engine(uri)
 
-            for name, kargs in self.get_mongo_odms():
+            for name, kargs in self.get_sqlalchemy_orms():
                 classname = kargs.get(ORM_CLASS, None)
-                tablename = kargs.get(ORM_TABLE, None)
+                tablename = kargs.get(TABLE, None)
 
                 if classname is None or tablename is None:
                     continue
                 self.import_add_orms(classname, tablename)
 
-            Bas
+
+
+        self.load_odm_configurations(self.get_odms())
+        self.load_orm_configurations(self.get_orms())
         self.bg_thread = None
+
+    def load_odm_configurations(self, odm_configs):
+        for name, configs in odm_configs.items():
+            odm = ODMMapper(name, default_engine_settings=self.default_mongo_settings, **configs)
+            self.odm_mappings[name] = odm
+
+        # TODO finalize mappings
+
+    def load_orm_configurations(self, orm_configs):
+        for name, configs in orm_configs.items():
+            odm = ODMMapper(name, default_engine_settings=self.default_sqlalchemy_settings, **configs)
+            self.odm_mappings[name] = odm
+
+        self.Base = declarative_base()
+
 
     def load_class(self, classname):
         blah = classname.split('.')
@@ -132,10 +180,10 @@ class RestService(object):
 
         python_class = self.load_class(fq_python_class_odm)
 
-        if python_class is not None and self.mongddb_client is not None:
-            kargs = {'mongo_database': database_name,
-                     'mongo_collection': collection_name,
-                     'mongo_connection': self.mongddb_client
+        if python_class is not None and self.default_mongo_engine is not None:
+            kargs = {ODM_DATABASE: database_name,
+                     ODM_COLLECTION: collection_name,
+                     ODM_CONNECTION: self.default_mongo_engine
                      }
             r = patch_umongo_meta(python_class, **kargs)
             self.logger.debug("Finished adding view ({}) to rest-service".format(fq_python_class_odm))
@@ -154,8 +202,8 @@ class RestService(object):
 
         python_class = self.load_class(fq_python_class_orm)
 
-        if python_class is not None and self.mongddb_client is not None:
-            kargs = {'postgres_tablename': table_name,}
+        if python_class is not None and self.default_sqla_engine is not None:
+            kargs = {ORM_TABLE: table_name,}
             r = patch_sqlalchemy_meta(python_class, **kargs)
             self.logger.debug("Finished adding view ({}) to rest-service".format(fq_python_class_orm))
             return r
@@ -257,7 +305,7 @@ class RestService(object):
         view.bind_application(self.app)
 
     def get_using_postgres(self):
-        return getattr(self, USING_POSTGRES, False)
+        return getattr(self, USING_SQLALCHEMY, False)
 
     def get_using_mongo(self):
         return getattr(self, USING_MONGO, False)
@@ -292,5 +340,5 @@ class RestService(object):
     def get_mongo_odms(self):
         return getattr(self, MONGO_ODMS, {})
 
-    def get_postgres_orms(self):
-        return getattr(self, POSTGRES_ORMS, {})
+    def get_sqlalchemy_orms(self):
+        return getattr(self, SQLALCHEMY_ORMS, {})

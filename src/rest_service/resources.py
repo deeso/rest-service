@@ -1,11 +1,6 @@
 from quart_openapi import Resource
 from quart import Response, request
-from pymongo import MongoClient
-from umongo import Instance
 import json
-
-from sqlalchemy.ext.declarative import declarative_base
-Base = declarative_base()
 
 
 # from https://www.anserinae.net/using-python-decorators-for-authentication.html
@@ -28,46 +23,6 @@ async def check_token(fn):
             rsp = fn(*args, **kwargs)
         return rsp
     return deco
-
-
-def patch_umongo_meta(odm_cls, **kargs):
-    meta = getattr(odm_cls, 'Meta')
-    if meta is None:
-        return False
-    connection = kargs.get('mongo_connection', None)
-    database = kargs.get('mongo_database', None)
-    collection = kargs.get('mongo_collection', None)
-
-    instance = Instance(connection[database])
-    if connection is not None and \
-        isinstance(connection, MongoClient) and \
-        database is not None and \
-        collection is not None:
-        col = connection[database][collection]
-        setattr(odm_cls, 'Meta', col)
-
-    if connection is not None and \
-        isinstance(connection, MongoClient) and \
-        database is not None:
-        instance = instance.register(odm_cls)
-        setattr(odm_cls, 'Meta', instance)
-    return True
-
-
-def patch_sqlalchemy_meta(sqla_cls, **kargs):
-    table = getattr(sqla_cls, '__table__')
-    if table is None:
-        return False
-    tablename = kargs.get('postgres_tablename', None)
-    if table is not None:
-        setattr(table, 'name', tablename)
-        setattr(table, 'fullname', tablename)
-        setattr(table, 'description', tablename)
-    return True
-
-
-class BaseSqla(Base):
-    pass
 
 class BaseResource(Resource):
     PATTERNS = ['/', ]

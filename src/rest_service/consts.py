@@ -19,17 +19,40 @@ USER = 'user'
 PASSWORD = 'password'
 DB = 'db'
 DATABASE = 'database'
-USING_POSTGRES = 'using_postgres'
-POSTGRES_HOST = 'postgres_host'
-POSTGRES_PORT = 'postgres_port'
-POSTGRES_USER = 'postgres_user'
-POSTGRES_PASS = 'postgres_password'
-POSTGRES_USE_SSL = 'postgres_use_ssl'
-POSTGRES_DB = 'postgres_db'
-POSTGRES_ORMS = 'pstgres_orms'
-ORM_TABLE = 'orm_table'
-ORM_CLASS = 'orm_class'
+COLLECTION = 'collection'
+TABLE = 'table'
+
+USING_SQLALCHEMY = 'using_postgres'
+SQLALCHEMY_HOST = 'sqlalchemy_host'
+SQLALCHEMY_PORT = 'sqlalchemy_port'
+SQLALCHEMY_USER = 'sqlalchemy_user'
+SQLALCHEMY_PASS = 'sqlalchemy_password'
+SQLALCHEMY_USE_SSL = 'sqlalchemy_use_ssl'
+SQLALCHEMY_DB = 'sqlalchemy_db'
+SQLALCHEMY_ORMS = 'sqlalchemy_orms'
+TLS_INSECURE = 'tlsInsecure'
+SSL_KEYFILE = 'ssl_keyfile'
+SSL_CERTFILE = 'ssl_certfile'
+
+ODMS = 'odms'
 ORMS = 'orms'
+
+ORM_CLASS = 'odm_class'
+ODM_CLASS = 'odm_class'
+CLASS = 'class'
+CONTROLLER = 'controller'
+RESOURCE = 'resource'
+
+# ORM_CLASS = 'orm_class'
+# HOST = 'host'
+# PORT = 'port'
+# USE_SSL = 'use_ssl'
+# USERNAME = 'username'
+# PASSWORD = 'password'
+CERT = 'cert'
+KEY = 'key'
+CONNECTION = 'connection'
+dialect = 'dialect'
 
 USING_MONGO = 'using_mongo'
 MONGO_HOST = 'mongo_host'
@@ -39,14 +62,17 @@ MONGO_PASS = 'mongo_password'
 MONGO_USE_SSL = 'mongo_use_ssl'
 MONGO_DB = 'mongo_db'
 MONGO_ODMS = 'mongo_odms'
-
-ODM_COLLECTION = 'odm_collection'
-ODM_DATABASE = 'odm_database'
-ODM_CLASS = 'odm_class'
-ODMS = 'orms'
+MONGO_CONNECTION = 'mongo_connection'
+MONGO_DATABASE = 'mongo_database'
+MONGO_COLLECTION = 'mongo_collection'
 
 VIEWS = 'views'
 
+META = 'Meta'
+TABLE__ = '__table__'
+FULLNAME = 'fullname'
+DESCRIPTION = 'description'
+ENGINE = 'engine'
 
 REST_SERVICE_BLOCK = 'rest-service'
 
@@ -74,13 +100,13 @@ REST_SERVICE_CONFIGS = {
 
 
     # Postgres related
-    USING_POSTGRES: False,
-    POSTGRES_HOST: None,
-    POSTGRES_PORT: None,
-    POSTGRES_USER: None,
-    POSTGRES_PASS: None,
-    POSTGRES_USE_SSL: False,
-    POSTGRES_DB: None,
+    USING_SQLALCHEMY: False,
+    SQLALCHEMY_HOST: None,
+    SQLALCHEMY_PORT: None,
+    SQLALCHEMY_USER: None,
+    SQLALCHEMY_PASS: None,
+    SQLALCHEMY_USE_SSL: False,
+    SQLALCHEMY_DB: None,
     ORMS: {},
 
 }
@@ -108,17 +134,17 @@ MAP_MONGO_TO_SETTINGS = {
     MONGO_DB: MONGODB_DB,
 }
 
-POSTGRESDB_SETTINGS = 'POSTGRESDB_SETTINGS'
-MAP_POSTGRES_TO_APP = {
-    POSTGRES_HOST: HOST,
-    POSTGRES_PORT: PORT,
-    POSTGRES_USER: USERNAME,
-    POSTGRES_PASS: PASSWORD,
-    POSTGRES_DB: DATABASE,
+SQLALCHEMYDB_SETTINGS = 'SQLALCHEMYDB_SETTINGS'
+MAP_SQLALCHEMY_TO_APP = {
+    SQLALCHEMY_HOST: HOST,
+    SQLALCHEMY_PORT: PORT,
+    SQLALCHEMY_USER: USERNAME,
+    SQLALCHEMY_PASS: PASSWORD,
+    SQLALCHEMY_DB: DATABASE,
 }
 
 DIALECT_DRIVER = 'dialect_driver'
-POSTGRES_DIALECT = 'postgresql+psycopg2'
+SQLALCHEMY_DIALECT = 'postgresql+psycopg2'
 MONGODB_DIALECT = 'mongodb'
 SQLALCHEMY_DATABASE_URI ='SQLALCHEMY_DATABASE_URI'
 

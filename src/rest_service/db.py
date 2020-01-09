@@ -3,6 +3,9 @@ import importlib
 from .consts import *
 import urllib.parse
 from .standard_logger import Logger
+from pymongo import MongoClient
+from sqlalchemy import create_engine
+
 
 class DBSettings(object):
 
@@ -43,7 +46,7 @@ class DefaultMapper(object):
     NAME = 'DefaultMapper'
     LOGGER = Logger(NAME)
     DEFAULT_SETTINGS = {}
-    ENGINE_SETTINGS = {}
+    ENGINE_SETTINGS_MAP = {}
 
     def __init__(self, name, rest_service, **kwargs):
         self.name = name
@@ -76,6 +79,19 @@ class DefaultMapper(object):
     def patch_resource_klass(self):
         raise Exception("Not implemented")
 
+    def create_engine_settings(self):
+        settings = {}
+        default_settings = self.get_default_engine_settings()
+        for k, v in self.ENGINE_SETTINGS_MAP.items():
+            if not hasattr(self, k) and k in default_settings:
+                settings[v] = default_settings.get(k)
+            else:
+                settings[v] = getattr(self, k, None)
+        return settings
+
+    def create_engine(self):
+        raise Exception("Not implemented")
+
     @classmethod
     def load_class(self, classname):
         blah = classname.split('.')
@@ -102,6 +118,11 @@ class DefaultMapper(object):
             return None
         return python_class
 
+    def get_default_engine_settings(self):
+        return getattr(self, DEFAULT_ENGINE_SETTINGS, None)
+
+    def can_create_uri(self, settings):
+        return all([k in settings for k in REQUIRED_DB_URI_FMT_KEYS])
 
 class ODMMapper(DefaultMapper):
     NAME = 'ODMMapper'
@@ -111,11 +132,17 @@ class ODMMapper(DefaultMapper):
         super(ODMMapper, self).__init__(name, rest_service, **kargs)
 
         self.uri = None
-        self.engine = None
+
 
         self.patch_om_klass()
         self.patch_resource_klass()
         self.patch_controller_klass()
+
+        self.engine = self.create_engine()
+
+    def create_engine(self):
+        settings = self.create_engine_settings()
+        return MongoClient(**settings)
 
 
 class ORMMapper(DefaultMapper):
@@ -126,9 +153,12 @@ class ORMMapper(DefaultMapper):
         super(ORMMapper, self).__init__(name, rest_service, **kargs)
 
         self.uri = None
-        self.engine = None
-
         self.patch_om_klass()
         self.patch_resource_klass()
         self.patch_controller_klass()
 
+        self.engine = self.create_engine()
+
+    def create_engine(self):
+        settings = self.create_engine_settings()
+        return MongoClient(**settings)

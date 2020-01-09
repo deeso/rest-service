@@ -10,38 +10,8 @@ from multiprocessing import Process
 from hypercorn.config import Config as HyperConfig
 from hypercorn.asyncio import serve
 from sqlalchemy.engine import create_engine
-from pymongo import MongoClient
 from .models import patch_umongo_meta, patch_sqlalchemy_meta
 from sqlalchemy.ext.declarative import declarative_base
-
-
-class MongoEngineSettings(object):
-    pass
-
-class SqlAlchemySettings(object):
-    pass
-
-class ODMMapper(object):
-    DEFAULT_SETTINGS = {}
-
-
-    def __init__(self, name, **kargs):
-        self.name = name
-
-        for k, v in self.DEFAULT_SETTINGS.items():
-            setattr(self, k, kargs.get(k, v))
-
-        self.resource_class = None
-        self.application = None
-        self.resource_controller = None
-        self.odm_class = None
-
-
-
-class ORMapper(object):
-    pass
-
-
 
 class RestService(object):
     DEFAULT_VALUES = REST_SERVICE_CONFIGS
@@ -91,8 +61,8 @@ class RestService(object):
 
 
         if self.get_using_postgres():
-            pgc = DBSettings.get_sqlalchemy_config(**kwargs)
-            uri = pgc.get(SQLALCHEMY_DATABASE_URI)
+            self.default_sqlalchemy_settings = DBSettings.get_sqlalchemy_config(**kwargs)
+            uri = self.pgc.get(SQLALCHEMY_DATABASE_URI)
             self.default_sqla_engine = create_engine(uri)
 
             for name, kargs in self.get_sqlalchemy_orms():
@@ -203,7 +173,7 @@ class RestService(object):
         python_class = self.load_class(fq_python_class_orm)
 
         if python_class is not None and self.default_sqla_engine is not None:
-            kargs = {ORM_TABLE: table_name,}
+            kargs = {ORM_TABLE: table_name, }
             r = patch_sqlalchemy_meta(python_class, **kargs)
             self.logger.debug("Finished adding view ({}) to rest-service".format(fq_python_class_orm))
             return r
@@ -342,3 +312,6 @@ class RestService(object):
 
     def get_sqlalchemy_orms(self):
         return getattr(self, SQLALCHEMY_ORMS, {})
+
+    def get_heartbeat(self, *args, **kargs):
+        raise Exception("Not implemented")

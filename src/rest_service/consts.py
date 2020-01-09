@@ -33,6 +33,7 @@ SQLALCHEMY_ORMS = 'sqlalchemy_orms'
 TLS_INSECURE = 'tlsInsecure'
 SSL_KEYFILE = 'ssl_keyfile'
 SSL_CERTFILE = 'ssl_certfile'
+DEFAULT_ENGINE_SETTINGS = 'default_engine_settings'
 
 ODMS = 'odms'
 ORMS = 'orms'
@@ -148,6 +149,17 @@ SQLALCHEMY_DIALECT = 'postgresql+psycopg2'
 MONGODB_DIALECT = 'mongodb'
 SQLALCHEMY_DATABASE_URI ='SQLALCHEMY_DATABASE_URI'
 
+REQUIRED_DB_URI_FMT_KEYS = [DIALECT_DRIVER, USERNAME, PASSWORD, HOST, PORT]
 DB_URI_FMT = '{dialect_driver}://{username}:{password}@{host}:{port}/{database}'
+DB_URI_NO_DB_FMT = '{dialect_driver}://{username}:{password}@{host}:{port}'
 
 
+
+ODM_DATABASE = 'odm_database'
+ODM_COLLECTION = 'odm_collection'
+ODM_CONNECTION = 'odm_connection'
+
+ORM_DATABASE = 'orm_database'
+ORM_COLLECTION = 'orm_collection'
+ORM_CONNECTION = 'orm_connection'
+ORM_TABLE = 'orm_table'
